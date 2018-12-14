@@ -58,7 +58,7 @@ end
 
 -------------------------------------------------------------------------------------------------function mqtt_start()
 local function mqtt_start()
-    mqtt = mqtt.Client(mqqt_clientID, 120, "steb", "!!Ebe81ner")
+    mqtt = mqtt.Client(mqqt_clientID, 120, "xxx", "xxx")
 
     mqtt:on("connect", function(con)
       print ("MQTT connected!")
@@ -68,7 +68,7 @@ local function mqtt_start()
       mqtt_connected = 0
       print(node.heap())
       tmr.alarm(2, 2000, 0, function()
-        mqtt:connect("192.168.0.117", 1883, 0)
+        mqtt:connect("192.168.0.xxx", 1883, 0)
         mqtt_connected = 1
       end)
     end)
@@ -145,7 +145,7 @@ local function wifi_wait_ip()
 end
 
 -- wlan verbinden
-wifi.sta.config("54MbitEssen", "ABDEFACD9876234561917256DC")
+wifi.sta.config("xxx", "xxx")
 wifi.sta.connect()
 print("Connecting to wifi...")
 tmr.alarm(1, 2500, 1, wifi_wait_ip)
