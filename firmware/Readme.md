@@ -19,3 +19,12 @@ If you need to customize init data then first download the [Espressif SDK 2.2.0]
 0x3fc000 for 4 MB, modules like ESP-12E, NodeMCU devkit 1.0, WeMos D1 mini
 0x7fc000 for 8 MB
 0xffc000 for 16 MB, modules like WeMos D1 mini pro
+
+**nodemcu-master-12-modules-2016-01-20-21-33-33-float.bin**
+NodeMCU custom build by frightanic.com
+    branch: master
+    commit: c8037568571edb5c568c2f8231e4f8ce0683b883
+    SSL: false
+    **modules: node,file,gpio,wifi,net,tmr,uart,ow,mqtt,cjson,dht,enduser_setup**
+ build  built on: 2016-01-20 21:33
+ powered by Lua 5.1.4 on SDK 1.4.0
