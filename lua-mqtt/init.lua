@@ -1,3 +1,5 @@
+node.compile("aktor.lua")
+
 count = 0
 --pwm.setup(3, 100, 0)
 tmr.alarm(0, 150, 1, function()
@@ -9,6 +11,6 @@ tmr.alarm(0, 150, 1, function()
     end
   else
     tmr.stop(0)
-    dofile("aktor.lua")
+    require("aktor")
   end
 end)
