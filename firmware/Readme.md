@@ -1,4 +1,4 @@
-Frmware update process:
+**Frmware update process:**
 1) Connect USB-UART
 2) Connect GPIO0 with GND
 3) Connect 5v and GND to USB-UART
