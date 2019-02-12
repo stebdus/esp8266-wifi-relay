@@ -5,9 +5,7 @@
 * [Spezifikation] (#spezifikation)
 * [Installation] (#installation)
 * [Konfiguration] (#konfiguration)
-* [SHC Schaltserver] (#shc-schaltserver)
 * [MQTT] (#mqtt)
-* [piMatic Installations Anleitung] (#pimatic)
 * [Manuelle Steuerung] (#manuelle-steuerung)
 * [Alternative Steuerungen] (#alternative-steuerungen)
 * [Sonstige Informationen] (#sonstige-informationen)
@@ -46,127 +44,11 @@ Dazu bitte die [actuator.lua](/lua-tcp/actuator.lua) öffen, die WLAN Daten anpa
 
 ![ESPlorer](/pics/esplorer.png?raw=true)
 
-## SHC Schaltserver
-
-Um aus der "Ferne" die Relais zu steuern, hat man die Möglichkeit in [SHC](http://rpi-controlcenter.de/) einen Schalterserver einzutragen mit der IP des ESP8266-Wifi-Relay und Port 9274 ( GPIO lesen JA, GPIO schreiben JA - geeignetes Model z.B. Arduino Nano ) 
-
-Nun kann man unter *Schaltfunktionen* Ausgänge anlegen ( als Schalterserver den neu erstellten auswählen und als **GPIO4/5** )  
-
-
-Damit in SHC auch die Rückmeldung funktioniert, wenn manuell geschaltet wird, muss in der [actuator.lua](/lua-tcp/actuator.lua) noch folgendes angepasst werden:
-- In der Funktion `send_to_visu` bitte PLATFORM = "SHC" setzen
-- Bei HOST bitte die IP eintragen unter der **SHC** erreichbar ist
-- Bei den "user defined options" (ganz oben) die **RELAY_SIDs** anpassen (die SID findet ihr. wenn ihr euch mit Putty einloggt, in das Verzeichnis `/var/www/shc` geht und dort ein `php index.php app=shc -sw –l` eingebt. Nun wird euch eine Liste mit allen schaltbaren Elementen angezeigt. Die SIDs jetzt bitte anpassen.)
 
 ## MQTT
 
 Das ESP8266-Wifi-Relay lässt sich auch via [MQTT](https://primalcortex.wordpress.com/2015/02/06/nodemcu-and-mqtt-how-to-start/) steuern/abfragen. Hierfür bitte [init.lua](/lua-mqtt/init.lua) und [aktor.lua](/lua-mqtt/aktor.lua) verwenden (Achtung: die Dateien müssen angepasst werden).
 
-## Pimatic
-
-Um das ESP8266-Wifi-Relay via Pimatic anzusteuern, ist folgende anpassung erforderlich:
-
-- Ändert in der [actuator.lua](/lua-tcp/actuator.lua) folgende Zeilen ab:
-
-```
--- pimatic-edition 02.02.2016
-ACTUATOR_VERSION = "0.4.0.pimatic"
-
--- user defined options
-RELAY1_SID = "Licht_Arbeitszimmer"
-RELAY1_SID = "Schlafzimmer_Lampe1"
-
-
------------------------------------------------
-function send_to_visu(sid, cmd)
-  local PLATFORM = "Pimatic"
-  local HOST = "192.168.8.200"
-  local port = 80
-  local link = ""
-  local BASE_LOGIN_PIMATIC = "YWRtaW46YzRqc2luOGQ="
-  if (PLATFORM == "Pimatic") then
-    local switch
-    if (cmd == 1) then
-      switch = "true"
-    elseif (cmd == 0) then
-      switch = "false"
-    end
-    port = 80
-    link = "/api/device/"..sid.."/changeStateTo?state="..switch..""
-  end
-
-  if (PLATFORM == "Openhab") then
-    local switch
-    if (cmd == 1) then
-      switch = "ON"
-    elseif (cmd == 0) then
-      switch = "OFF"
-    end
-    port = 8080
-    link = "/CMD?" ..sid.."=" ..switch
-  end
-
-  print(link)
-  
-  local conn = net.createConnection(net.TCP, 0) 
-  conn:send("GET "..link.." HTTP/1.1\r\n")
-  conn:send("Authorization: Basic "..BASE_LOGIN_PIMATIC.."\r\n")
-  conn:send("Host: "..HOST.."\r\n")
-  conn:send("Content-Type:application/json\r\n")
-  conn:send("Connection: close\r\n")
-  conn:send("Accept: */*\r\n\r\n")
-  time_before = tmr.now()  
-  conn:on("receive", function(conn, payload)
-    print('Retrieved in '..((tmr.now()-time_before)/1000)..' milliseconds.\n')
-    --print(payload)
-    conn:close()
-  end) 
-    
-  conn:connect(port, HOST)
-
-end
------------------------------------------------
-```
-
-- Konfiguriert nun folgede Zeilen und Speichert die actuator.lua auf dem ESP8266:
-  - RELAY1_SID         -- device-id des Pimatic-Schalters, der Relais 1 schalten soll
-  - RELAY2_SID         -- (falls vorhanden) device-id des Pimatic-Schalters, der Relais 2 schalten soll
-  - HOST               -- IP eures Pimatic-Servers
-  - BaseLoginPimatic   -- Base64-codierter String des Loginschemas "user:passwort" -> Um die Base64Login-Daten zu erhalten, gebt eure Loginschema auf https://www.base64encode.org/ ein und drückt "encode"
- 
-- Kopiert nun die tcp.php auf euer RaspberryPi (hier im Beispiel /home/pi/tcp.php) z.b. mit  ```wget https://raw.githubusercontent.com/JanGoe/esp8266-wifi-relay/master/tcp.php```
-- Stellt sicher dass php5 am RaspberryPi installiert ist (ggf. "sudo apt-get install php5") 
-- Anschließend fügt ihr folgende Device der Pimatic-Konfiguration an:
-
-  ```
-      {
-      "id": "Licht_Arbeitszimmer",
-      "name": "Lamp",
-      "class": "ShellSwitch",
-      "onCommand": "php /home/pi/tcp.php 192.168.8.3 2x4x1",
-      "offCommand": "php /home/pi/tcp.php 192.168.8.3 2x4x0",
-      "getStateCommand": "echo false",
-      "interval": 0
-    }
-  ```
-  - id               -- muss mit der "sid" des ESP's übereinstimmen
-  - name             -- kann frei gewählt werden
-  - onCommand        -- Einschaltbefehl "php <pfad/der/tcp.php> <ip-des-esp> <funktion>" die Kommandos findet ihr im Abschnitt "PHP Script"
-  - offCommand       -- Ausschaltbefehl
-  - getStateCommand  -- Befehl, der zur Schalterzustandaktualisierung verwendet wird. Dieser muss nicht verwendet werden da der Schalter seinen Zustand an Pimatic übermittelt
-  - interval         -- Häufigkeit der Abfrage des Schalterzustandes in Millisekunden
-
-![pimatic-switch](http://www.youscreen.de/gxmqrhwb10.jpg)
-
-Funktioniert alles Korrekt, sollten sich im ESPlorer nach manueller Betätigung von "Switch1" folgende Debugzeilen abbilden
-
-![pimatic-switch-debug](http://www.youscreen.de/skuzwqbs61.jpg)
-
-... und sich der Schalterzustand in Pimatic entsprechend anpassen.
-
-Bei Umlegen des schalters in Pimatic erscheinen fogende Debugzeilen (im ESPlorer sichtbar):
-
-![pimatic-switch-debug2](http://www.youscreen.de/yovpflqp16.jpg)
 
 ## Manuelle Steuerung
 
