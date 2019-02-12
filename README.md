@@ -7,7 +7,6 @@
 * [Konfiguration] (#konfiguration)
 * [MQTT] (#mqtt)
 * [Manuelle Steuerung] (#manuelle-steuerung)
-* [Alternative Steuerungen] (#alternative-steuerungen)
 * [Sonstige Informationen] (#sonstige-informationen)
 
 ## Spezifikation
@@ -47,8 +46,11 @@ Dazu bitte die [actuator.lua](/lua-tcp/actuator.lua) öffen, die WLAN Daten anpa
 
 ## MQTT
 
-Das ESP8266-Wifi-Relay lässt sich auch via [MQTT](https://primalcortex.wordpress.com/2015/02/06/nodemcu-and-mqtt-how-to-start/) steuern/abfragen. Hierfür bitte [init.lua](/lua-mqtt/init.lua) und [aktor.lua](/lua-mqtt/aktor.lua) verwenden (Achtung: die Dateien müssen angepasst werden).
+Das ESP8266-Wifi-Relay lässt sich auch via [MQTT](https://primalcortex.wordpress.com/2015/02/06/nodemcu-and-mqtt-how-to-start/) steuern/abfragen. Siehe MQTT Ordner.
 
+
+## MQTT OTA
+Der Ordner MQTT-OTA enthält eine Version, die zusätzlich zur Steuerung per MQTT auch ein Update "over-the-air" zulässt. Per Webseite auf dem Port 43333
 
 ## Manuelle Steuerung
 
@@ -80,26 +82,6 @@ Wer die Relais gegeneinander verriegeln möchte, bitte in der [actuator.lua](/lu
 
 Möchte man Rückmeldungen vom manuellen Schalten auswerten geht dieses via HTTP ( der ESP8266 sendet einen HTTP-GET-REQUEST an eine gewünschte Seite - dazu bitte die Funktion `send_to_visu` in der ([actuator.lua](/lua-tcp/actuator.lua)) anpassen.
 
-### OpenHab
-
-Beispiel für [OpenHab](http://www.openhab.org/) ( Benötigt PHP auf dem OpenHab Host und das [EXEC Binding](https://github.com/openhab/openhab/wiki/Exec-Binding) )
-
-Bitte in der Items Datei (`<openhab_installation_dir>/configurations/items`) folgendes eintragen:
-
-```
-Switch Schalter "Lampe1" {exec=">[ON:php /var/www/tcp.php 192.168.0.62 2x3x1] >[OFF:php /var/www/tcp.php 192.168.0.62 2x3x0]"}
-```
-
-*192.168.0.62 ist im obigen Beispiel die IP Adresse des ESP8266*
-
-Für Rückmeldungen in Openhab bitte in der [actuator.lua](/lua-tcp/actuator.lua) folgende Zeilen anpassen:
-- In der Funktion `send_to_visu` PLATFORM = "Openhab" setzen
-- IP unter der openhab erreichbar ist
-- ggf. den Port anpassen
-- Bei den "user defined options" (ganz oben) die **RELAY_SIDs** anpassen auf die Namen der Items die aktualisiert werden sollen
-
-
-Weitere Informationen über OpenHab findet sich in den [Ersten Schritten](https://openhabdoc.readthedocs.org/de/latest/Beispiel/).
 
 ## Sonstige Informationen
 
